@@ -80,6 +80,8 @@ Interaction
 
 For each cluster, the fix is specific: replace the generic piece with something only this product could say or show, or remove it.
 
+A signal the owner chose on purpose (documented in the project's rules or approval notes) is not a default nobody chose, so it does not count toward a cluster. Report only its concrete side effects, as described in Step 1 of SKILL.md.
+
 ## 7. Checklist: what can go
 
 Go through the page and ask of each item, "would the page be worse without this?"

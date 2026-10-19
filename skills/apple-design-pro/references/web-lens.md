@@ -45,6 +45,7 @@ Every interactive element needs distinct states: default, hover, `:focus-visible
 - Placeholder text, disabled-looking secondary text, and text over images or gradients are the usual failures. Measure the worst point of a gradient or photo, not the average.
 - Do not encode meaning by color alone (errors, status, links inside text need a second cue such as underline, icon or text).
 - Measure with DevTools' color picker (contrast ratio shown), or axe / Lighthouse. Report the measured ratio and the required one.
+- DOM-based tools (axe, Lighthouse, scripts reading computed styles) only see CSS background colors. Text over a canvas, image, video, gradient or semi-transparent layer is unmeasured by them, not passed. Measure pixels: screenshot the text's bounding box, screenshot it again with the text set to `color: transparent` (and `-webkit-text-fill-color: transparent`), then compute the ratio of the text color against every background pixel and report the minimum and the 5th percentile. For animated backgrounds, sample several moments and report the worst. `scripts/measure.mjs` implements this.
 - `prefers-contrast: more` and Windows `forced-colors: active` should not break the layout; check that borders and icons survive.
 
 ## 5. Loading and Core Web Vitals

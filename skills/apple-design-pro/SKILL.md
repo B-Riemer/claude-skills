@@ -20,11 +20,15 @@ Scope: websites and web apps. Apple's Human Interface Guidelines are written for
 | File | Load when |
 | --- | --- |
 | `references/web-lens.md` | Review: always. Build: when touching layout, forms, fonts, images, dark mode or accessibility. |
-| `references/motion-principles.md` | Review: when the page has any motion, gestures, overlays or materials. Build: always, it is the main guide. |
+| `references/motion-principles.md` | Review: whenever the page moves or layers at all: any CSS transition or animation (hover lifts included), scroll-linked or scroll-triggered effects, canvas or WebGL animation, overlays, gestures, or translucent materials (`backdrop-filter`). Build: always, it is the main guide. |
 | `references/visual-craft.md` | Review: always for a "make it look better / less generic" request. Build: when designing layout, type or color. |
 | `references/hig-links.md` | When you need Apple's own wording for a reason or citation. Open the linked page for the specific topic only; never cite from memory. |
 
-Do not load every file by default. A review of a static page with no motion does not need the full motion file; read §14 (reduced motion) and §15 (type) at most.
+Do not load every file by default. Only a truly static page (no transitions, no animation, no canvas, no translucent layers) may skip the full motion file; then read motion-principles.md §14 (reduced motion) and §15 (type) at most. Cite only sections you have actually read in this session.
+
+## Measurement script
+
+`scripts/measure.mjs` measures a live site with Playwright: horizontal overflow with culprits, tap targets, CLS/LCP, console errors, type inventory, DOM contrast, pixel contrast for text over canvas/images/gradients, a reduced-motion and a no-JavaScript pass, and a keyboard focus pass. Run `node scripts/measure.mjs --help` for usage. Use it instead of writing a measurement script from scratch; extend it with targeted probes only for what it does not cover. If Playwright is not installed, the script says how to install it; ask before installing anything into the user's project.
 
 ## Review mode
 
@@ -36,10 +40,12 @@ Find out, asking only for what is missing:
 2. **Audience and goal:** who visits, what the page should make them do, and on which devices.
 3. **Stack:** framework, CSS approach (Tailwind, CSS modules, plain CSS), animation library. Fixes must be written in this stack.
 4. **Scope:** whole site, one page, or one component.
+5. **Deliberate decisions:** read the project's own rules and decision records before judging anything (CLAUDE.md, AGENTS.md, design docs, a design-system page, approval notes, comments next to the code). A choice the owner made on purpose (a hover effect, an approved animation, a brand color) is not a finding in itself. Report only its concrete side effects (for example "the hover lift sticks after a tap on touch devices"), and mark such findings as touching an approved decision so the owner decides. If you cannot tell whether something is deliberate, say so in the finding instead of calling it a template signal.
 
 ### Step 2: Measure, do not guess
 
-- With a **live URL** and browser tools available (browser automation, DevTools, Lighthouse, a Playwright or Chrome session), actually load the page at mobile (about 390 px) and desktop widths and measure: contrast ratios, tap target sizes, horizontal overflow, layout shifts, font loading, image sizes, console errors, focus visibility via keyboard. Prefer real numbers.
+- With a **live URL** and browser tools available (browser automation, DevTools, Lighthouse, a Playwright or Chrome session), actually load the page at mobile (about 390 px) and desktop widths and measure: contrast ratios, tap target sizes, horizontal overflow, layout shifts, font loading, image sizes, console errors, focus visibility via keyboard. Prefer real numbers. Start with `scripts/measure.mjs`.
+- **Text over canvas, images, video or gradients:** DOM-based contrast tools cannot see what is drawn behind the text, so their result there is neither a pass nor a fail. Measure pixels instead: screenshot the text box, screenshot it again with the text made transparent, and compute the contrast of the text color against the worst background pixels (`measure.mjs` does this; method in `web-lens.md` §4). For animated backgrounds, take several samples and report the worst. Leave contrast as an assessment only if pixel measurement is impossible, and say why.
 - With **code only**, read the relevant files and say which findings come from code reading and could not be confirmed at runtime.
 - With **screenshots only**, you can judge visual craft, hierarchy and contrast approximately; you cannot judge motion, focus, performance or responsiveness. Say so, and do not report those lenses as clean.
 - If you cannot run a tool you would need (no browser access, no network), say so and mark the dependent findings as unverified instead of substituting a guess.
@@ -51,7 +57,7 @@ Work through them in sequence. Skip a lens only when it truly does not apply, an
 1. **Accessibility.** Contrast, focus visibility, keyboard path, target size, reduced motion, text zoom, labels, alt text, semantic elements. Failures here are the most serious and the most objective. Details: `web-lens.md` sections 1 to 4, 9 and 10, and `motion-principles.md` §14.
 2. **Web lens.** Responsiveness, no horizontal scroll, touch vs. hover, Core Web Vitals, layout shifts, images, fonts, dark mode, forms. Details: all of `web-lens.md`.
 3. **Visual craft and template look.** Type hierarchy, spacing rhythm, color discipline, restraint, signature element, generic-template signals, removal checklist. Details: `visual-craft.md`.
-4. **Motion and interaction.** Response latency, 1:1 tracking, interruptibility, springs vs. fixed easings, enter/exit symmetry, rubber-banding, materials, feedback, press states. Check each against the 17 principles in `motion-principles.md`; cite as "motion-principles.md §N". Only evaluate what exists; a page without gestures does not get gesture findings.
+4. **Motion and interaction.** Response latency, 1:1 tracking, interruptibility, springs vs. fixed easings, enter/exit symmetry, rubber-banding, materials, feedback, press states. Check each against the 17 principles in `motion-principles.md`; cite as "motion-principles.md §N". Only evaluate what exists; a page without gestures does not get gesture findings. But if anything on the page moves or is translucent, this lens is mandatory: load `motion-principles.md` before writing findings, and check at least response, interruptibility, easing choice, reduced motion and, for `backdrop-filter`, materials and `prefers-reduced-transparency` (§12, §14).
 5. **Content and microcopy.** Button labels that name the action, specific headings, error messages that say how to fix it, empty and loading states, vague marketing filler, inconsistent terminology, placeholder text left in.
 
 ### Severity
@@ -69,6 +75,7 @@ Rank by user impact, not by how easy the fix is. Do not inflate severity to fill
 
 - **Review only what is actually present.** No finding without something observed on the page or in the code. No generic advice lists.
 - **Evidence or label.** Each finding is either **Verified** (measured or directly seen, with the value) or **Assessment** (judgment or inference, with how to verify it).
+- **Cite with the file name, always:** "web-lens.md §4", "motion-principles.md §11", "the project's CLAUDE.md §7". Never a bare "§N", because the skill and the project both number their sections.
 - **Quote the numbers:** "body text #8a8a8a on #ffffff is 3.4:1, needs 4.5:1", "CTA is 32x32 px".
 - **Credit what works.** Mention up to three things that are genuinely good, so the user knows what to keep.
 - **One root cause, one finding.** Group repeats ("12 buttons lack focus styles") with a count and examples.
@@ -89,7 +96,7 @@ Start with a 3 to 5 line summary: overall impression, the one or two things that
 End with:
 
 1. **Quick wins:** the findings that take minutes and visibly lift the page.
-2. **Not checked:** lenses or items skipped, and why (no browser access, screenshot only, and so on).
+2. **Not checked:** every lens or item skipped or only partly run, and why (no browser access, screenshot only, reference file not loaded, and so on). A lens that is missing from the findings and missing from this list counts as a reporting error.
 3. **Side observations:** things noticed outside the scope, not acted on.
 
 ## Build mode
