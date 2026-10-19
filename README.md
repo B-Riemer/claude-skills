@@ -4,7 +4,6 @@
   <img src="assets/banner-light.svg" alt="claude-skills: agent skills for reviewing and building web interfaces" width="100%">
 </picture>
 
-[![skills.sh](https://skills.sh/b/B-Riemer/claude-skills)](https://skills.sh/B-Riemer/claude-skills)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![validate-skills](https://github.com/B-Riemer/claude-skills/actions/workflows/validate-skills.yml/badge.svg)](https://github.com/B-Riemer/claude-skills/actions/workflows/validate-skills.yml)
 
