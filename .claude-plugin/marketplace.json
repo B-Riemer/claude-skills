@@ -1,0 +1,21 @@
+{
+  "name": "bjorvik-skills",
+  "owner": {
+    "name": "BjorVik"
+  },
+  "metadata": {
+    "description": "Agent skills for reviewing and building web interfaces.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "apple-design-pro",
+      "description": "Review, audit or build websites with Apple-grade polish in motion, interaction and visual craft. Web only, not native apps.",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/apple-design-pro"
+      ]
+    }
+  ]
+}
