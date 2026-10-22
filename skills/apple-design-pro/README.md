@@ -32,7 +32,11 @@ Applied in this order. A lens is skipped only when it does not apply, and the re
 | Medium | Noticeable polish gap or inconsistency. |
 | Low | Small refinement or taste-level improvement. |
 
-Each finding is marked Verified (measured or directly seen) or Assessment (judgment, with a way to verify it). Choices the project documents as deliberate are not reported as flaws; only their concrete side effects are. The report ends with quick wins, what was not checked (every skipped or partial lens), and side observations.
+The examples in the severity table are a floor: a finding that matches one is ranked at least that high, or the report says why not.
+
+Each finding is marked Verified (measured or directly seen) or Assessment (judgment, with a way to verify it). On a live site, behavior found by reading code (an overlay without Escape, a sticky hover) only counts as Verified once it has been reproduced in the browser, and findings from delegated sub-agents are spot-checked before they are reported. Choices the project documents as deliberate are not reported as flaws; only their concrete side effects are. The report ends with quick wins, what was not checked (every skipped or partial lens), and side observations.
+
+If you ask for the findings to be fixed, the skill measures again with the same settings afterwards and reports a before/after table. A fix counts as done when the re-measurement shows it.
 
 ## Reference files
 
@@ -45,11 +49,21 @@ Each finding is marked Verified (measured or directly seen) or Assessment (judgm
 
 ## Measurement script
 
-[`scripts/measure.mjs`](scripts/measure.mjs) measures a live site with Playwright across widths and light/dark: horizontal overflow and its culprits, tap targets, CLS/LCP, console errors, type inventory, DOM contrast, pixel contrast for text over canvas, images or gradients, a reduced-motion and a no-JavaScript pass, and a keyboard focus pass.
+[`scripts/measure.mjs`](scripts/measure.mjs) measures a live site with Playwright across widths and light/dark: horizontal overflow and its culprits, tap targets, CLS/LCP, console errors, type inventory, DOM contrast, pixel contrast for text over canvas, images or gradients, a reduced-motion and a no-JavaScript pass, a high-contrast and forced-colors pass, and a keyboard focus pass. It ends with a compact per-route summary (`<out>.summary.txt`).
 
 ```
 node scripts/measure.mjs https://example.com /,/pricing --out results.json
 ```
+
+| Option | Purpose |
+| --- | --- |
+| `--widths 320,390,1440` | Viewport widths. Add `768,1024` for layouts with tablet breakpoints. |
+| `--schemes light,dark` | Color schemes; one scheme is enough for a quick re-measurement. |
+| `--state file.json` | Playwright `storageState` for pages behind a login. Use a test or demo account and keep the file out of the project. |
+| `--skip passes,prefs,keyboard,pixel` | Skip passes to shorten a re-measurement. |
+| `--shots dir` | Full-page screenshots plus viewport-height slices. |
+
+What it deliberately ignores or handles: visually hidden `.sr-only` text is left out of contrast and type checks; an absolutely positioned element that escapes a scroll container is reported as an overflow culprit; a focus ring drawn on a child element counts as a focus indicator. `prefers-reduced-transparency` cannot be emulated by Playwright and has to be checked in code.
 
 Requires Playwright (`npm i -D playwright && npx playwright install chromium`).
 

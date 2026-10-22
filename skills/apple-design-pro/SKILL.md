@@ -28,7 +28,10 @@ Do not load every file by default. Only a truly static page (no transitions, no 
 
 ## Measurement script
 
-`scripts/measure.mjs` measures a live site with Playwright: horizontal overflow with culprits, tap targets, CLS/LCP, console errors, type inventory, DOM contrast, pixel contrast for text over canvas/images/gradients, a reduced-motion and a no-JavaScript pass, and a keyboard focus pass. Run `node scripts/measure.mjs --help` for usage. Use it instead of writing a measurement script from scratch; extend it with targeted probes only for what it does not cover. If Playwright is not installed, the script says how to install it; ask before installing anything into the user's project.
+`scripts/measure.mjs` measures a live site with Playwright: horizontal overflow with culprits, tap targets, CLS/LCP, console errors, type inventory, DOM contrast, pixel contrast for text over canvas/images/gradients, a reduced-motion and a no-JavaScript pass, and a keyboard focus pass. It also runs a high-contrast and forced-colors pass and finishes with a per-route summary (`<out>.summary.txt`); read that first and open the JSON only for details. Run `node scripts/measure.mjs --help` for usage. Use it instead of writing a measurement script from scratch; extend it with targeted probes only for what it does not cover. If Playwright is not installed, the script says how to install it; ask before installing anything into the user's project.
+
+- **Pages behind a login:** log in once with a test or demo account in a small Playwright script, save `context.storageState()` to a file in your scratch directory, and pass it with `--state`. Never use real user credentials, never store the state file in the project or in git, and say in the report which account was used.
+- **Re-measurement:** `--schemes light` and `--skip passes,prefs,keyboard` cut the run time when only a few values need re-checking.
 
 ## Review mode
 
@@ -49,6 +52,9 @@ Find out, asking only for what is missing:
 - With **code only**, read the relevant files and say which findings come from code reading and could not be confirmed at runtime.
 - With **screenshots only**, you can judge visual craft, hierarchy and contrast approximately; you cannot judge motion, focus, performance or responsiveness. Say so, and do not report those lenses as clean.
 - If you cannot run a tool you would need (no browser access, no network), say so and mark the dependent findings as unverified instead of substituting a guess.
+- **Widths:** besides about 390 px and desktop, measure 320 px, and add 768 and 1024 px whenever the layout changes between phone and desktop (sidebar, multi-column grid, collapsing navigation).
+- **Confirm code findings at runtime.** When the page is live and reachable, a behavior you found by reading code (an overlay without Escape, a panel opening from the wrong origin, a sticky hover) is reported as Verified only after you have seen it in the browser. For overlays, open them, press Escape, Tab through and check `document.activeElement` before and after. If you cannot reproduce it at runtime, report it as an Assessment or drop it. Facts that live only in code (a media query that does not exist, a duplicated rule) can be Verified from the code.
+- **Delegated analysis:** if a sub-agent reads code or measures for you, spot-check its findings yourself before they go into the report. A sub-agent's claim is an Assessment until you have confirmed it.
 
 ### Step 3: Run the lenses in this order
 
@@ -69,12 +75,12 @@ Work through them in sequence. Skip a lens only when it truly does not apply, an
 | **Medium** | Noticeable polish gap or inconsistency | Ad-hoc font sizes and spacing, fixed-duration easing on a draggable element, hover-only affordance, generic template cluster |
 | **Low** | Small refinement or taste-level improvement | Tracking tweaks, slight misalignment, minor microcopy, optional dark-mode touch-ups |
 
-Rank by user impact, not by how easy the fix is. Do not inflate severity to fill a section; an empty severity level is fine.
+Rank by user impact, not by how easy the fix is. Do not inflate severity to fill a section; an empty severity level is fine. Use the examples in this table as the floor: a finding that matches one (for example a tap target under 24 px or body text under 4.5:1) gets at least that level. If you rank it lower, say why in the finding (for example "desktop only, the surrounding label is the hit area").
 
 ### Rules for findings
 
 - **Review only what is actually present.** No finding without something observed on the page or in the code. No generic advice lists.
-- **Evidence or label.** Each finding is either **Verified** (measured or directly seen, with the value) or **Assessment** (judgment or inference, with how to verify it).
+- **Evidence or label.** Each finding is either **Verified** (measured or directly seen, with the value) or **Assessment** (judgment or inference, with how to verify it). There is no third label: "from code" is a source, not a status. Say where the evidence comes from (measurement, screenshot, browser test, code) next to the label.
 - **Cite with the file name, always:** "web-lens.md §4", "motion-principles.md §11", "the project's CLAUDE.md §7". Never a bare "§N", because the skill and the project both number their sections.
 - **Quote the numbers:** "body text #8a8a8a on #ffffff is 3.4:1, needs 4.5:1", "CTA is 32x32 px".
 - **Credit what works.** Mention up to three things that are genuinely good, so the user knows what to keep.
@@ -98,6 +104,10 @@ End with:
 1. **Quick wins:** the findings that take minutes and visibly lift the page.
 2. **Not checked:** every lens or item skipped or only partly run, and why (no browser access, screenshot only, reference file not loaded, and so on). A lens that is missing from the findings and missing from this list counts as a reporting error.
 3. **Side observations:** things noticed outside the scope, not acted on.
+
+### After fixes: re-measure
+
+If the user asks for the findings to be fixed, finish by measuring again with the same script, routes, widths and login as the review, and report a before/after table per finding. List anything new the re-measurement found separately, and correct any finding from the review that turned out to be wrong. A fix counts as done when the re-measurement shows it, not when the code was changed.
 
 ## Build mode
 

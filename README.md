@@ -48,7 +48,7 @@ flowchart LR
     D --> E["Report<br/>findings, quick wins, not checked"]
 ```
 
-What the skill can verify depends on its input. With a live URL and browser tooling it measures. With code only, it marks runtime findings as unconfirmed. With screenshots only, it does not report motion, focus, performance or responsiveness as clean. Details are in the [skill page](skills/apple-design-pro/README.md).
+What the skill can verify depends on its input. With a live URL and browser tooling it measures, using its own Playwright script (also behind a login, with a test account), and confirms code-reading findings in the browser before calling them verified. After fixes it measures again and reports before and after. With code only, it marks runtime findings as unconfirmed. With screenshots only, it does not report motion, focus, performance or responsiveness as clean. Details are in the [skill page](skills/apple-design-pro/README.md).
 
 ## Example output
 
@@ -88,7 +88,9 @@ a ratio of 3.4:1 (WCAG AA requires 4.5:1 for body text). Affects every `<p>` in
 │   └── apple-design-pro/
 │       ├── SKILL.md
 │       ├── README.md
-│       └── references/       web-lens, motion-principles, visual-craft, hig-links
+│       ├── references/       web-lens, motion-principles, visual-craft, hig-links
+│       └── scripts/
+│           └── measure.mjs   Playwright measurements for live pages
 ├── CHANGELOG.md
 ├── LICENSE
 └── README.md
